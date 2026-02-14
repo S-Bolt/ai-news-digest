@@ -1,0 +1,19 @@
+{
+  "name": "newsagent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "nodemailer": "^8.0.1",
+    "openai": "^6.22.0"
+  }
+}
