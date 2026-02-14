@@ -21,6 +21,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Show files
+        run: |
+          pwd
+           ls -la
+           find . -maxdepth 3 -type f -name "index.js" -o -name "index.mjs" -o -name "main.js"
+           ls -la src || true
+
       - name: Run digest script
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
