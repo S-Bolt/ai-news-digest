@@ -22,18 +22,6 @@ async function main() {
       focus:
         "agents, agent frameworks, tool-use, orchestration (LangGraph/LangChain), evals, workflows, RAG improvements, MCP",
     },
-    {
-      sectionTitle: "Technology",
-      itemCount: 4,
-      focus:
-        "cloud/infra, chips/compute, major product launches, outages, funding/M&A with developer impact, big platform changes",
-    },
-    {
-      sectionTitle: "Coding & Tooling",
-      itemCount: 4,
-      focus:
-        "JavaScript/TypeScript, React/Next, Node, Prisma, Vite, bundlers, ESLint, GitHub releases, IDE/editor tooling",
-    },
   ];
 
   // Run sections in parallel for speed
