@@ -1,66 +1,55 @@
 import "dotenv/config";
-import OpenAI from "openai";
-import nodemailer from "nodemailer";
-
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-console.log("hi");
-
-// 1) Get AI news digest (agent uses web_search tool)
-async function buildDigest() {
-  const instructions = `
-Every run: search the web for today's most important AI news from the last 24 hours.
-Return 5-10 bullets with: headline, outlet, why it matters, and link.
-Include a 3-bullet "What to watch next" section.
-Prefer primary sources (company blogs, arXiv, major outlets).
-Be concise. No fluff.
-`;
-
-  const input = `
-Date: ${new Date().toISOString()}
-Topic: AI news (last 24 hours). Focus on model releases, major research, policy/regulation, big product launches, security incidents, and notable funding/M&A.
-`;
-
-  const response = await client.responses.create({
-    model: "gpt-5",
-    instructions,
-    input,
-    tools: [{ type: "web_search" }], // built-in web search tool
-  });
-
-  return response.output_text;
-}
-
-// 2) Email it
-async function sendEmail({ subject, text }) {
-  const port = Number(process.env.SMTP_PORT || 587);
-  const secure = process.env.SMTP_SECURE
-    ? process.env.SMTP_SECURE.toLowerCase() === "true"
-    : port === 465;
-
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to: process.env.EMAIL_TO,
-    subject,
-    text,
-  });
-}
+import { nowInNY, subjectLine } from "./helpers/utils.js";
+import { buildSection, buildWatchList } from "./helpers/digest.js";
+import { sendEmail } from "./helpers/email.js";
+import { renderHtmlEmail, renderPlainText } from "./helpers/render.js";
 
 async function main() {
-  const digest = await buildDigest();
-  const subject = `AI News Digest - ${new Date().toLocaleDateString("en-US")}`;
+  const title = "Daily Intelligence Briefing";
+  const generatedAt = nowInNY();
 
-  await sendEmail({ subject, text: digest });
-  console.log("Sent:", subject);
+  // Tune these however you want (this is the whole point of multi-call)
+  const sectionSpecs = [
+    {
+      sectionTitle: "AI",
+      itemCount: 5,
+      focus:
+        "model releases, major lab announcements, notable research papers, safety/security incidents, regulation/policy, benchmarks",
+    },
+    {
+      sectionTitle: "Agentic",
+      itemCount: 4,
+      focus:
+        "agents, agent frameworks, tool-use, orchestration (LangGraph/LangChain), evals, workflows, RAG improvements, MCP",
+    },
+    {
+      sectionTitle: "Technology",
+      itemCount: 4,
+      focus:
+        "cloud/infra, chips/compute, major product launches, outages, funding/M&A with developer impact, big platform changes",
+    },
+    {
+      sectionTitle: "Coding & Tooling",
+      itemCount: 4,
+      focus:
+        "JavaScript/TypeScript, React/Next, Node, Prisma, Vite, bundlers, ESLint, GitHub releases, IDE/editor tooling",
+    },
+  ];
+
+  // Run sections in parallel for speed
+  const sections = await Promise.all(sectionSpecs.map(buildSection));
+  const watch = await buildWatchList();
+
+  const plain = renderPlainText({ title, generatedAt, sections, watch });
+  const html = renderHtmlEmail({ title, generatedAt, sections, watch });
+
+  await sendEmail({
+    subject: subjectLine(),
+    text: plain,
+    html,
+  });
+
+  console.log("Sent:", subjectLine());
 }
 
 main().catch((err) => {
