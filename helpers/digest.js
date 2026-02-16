@@ -35,7 +35,7 @@ function normalizeSection(items, itemCount) {
 
 export async function buildDigest(
   { sectionSpecs, watchItemCount = 3 },
-  { responsesClient, model = "gpt-5" } = {},
+  { responsesClient, model = process.env.OPENAI_MODEL || "gpt-5-mini" } = {},
 ) {
   if (!Array.isArray(sectionSpecs) || sectionSpecs.length === 0) {
     throw new Error("sectionSpecs is required and must be a non-empty array.");
