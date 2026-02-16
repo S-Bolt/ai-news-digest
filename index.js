@@ -24,7 +24,7 @@ function logUsageTelemetry({ usage, responseId, modelUsed }) {
     usage,
     estimatedUsd: estimatedUsd == null ? null : Number(estimatedUsd.toFixed(6)),
   };
-  console.log("[OpenAI Usage]", JSON.stringify(payload));
+  console.log("[📊 OpenAI Usage]", JSON.stringify(payload));
 }
 
 async function main() {
@@ -62,7 +62,7 @@ async function main() {
     html,
   });
 
-  console.log("Sent:", subjectLine());
+  console.log("✅ Sent:", subjectLine());
 }
 
 main().catch((err) => {
